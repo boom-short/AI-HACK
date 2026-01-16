@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>◈•° 𝑲𝒊𝒏𝒈 𝑺𝒐𝒊𝒌𝒂𝒕 𝑩𝒂𝒉𝒊 °•◈</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div id="loginSection">
+    <div class="login-box">
+      <div style="font-size: 18px; font-weight: 700; color: var(--primary);">◈•° 𝑲𝒊𝒏𝒈 𝑺𝒐𝒊𝒌𝒂𝒕 𝑩𝒂𝒉𝒊 °•◈</div>
+      <input type="password" id="pass" class="login-input" placeholder="ACCESS KEY">
+      <button onclick="login()" class="login-btn">ENTER SYSTEM</button>
+      <div id="errorMsg">❌ WRONG ACCESS KEY!</div>
+    </div>
+  </div>
+
+  <div id="mainApp" style="display: none;">
+    <div class="header">◈•° 𝑲𝒊𝒏𝒈 𝑺𝒐𝒊𝒌𝒂𝒕 𝑩𝒂𝒉𝒊 °•◈</div>
+
+    <div class="stats-bar">
+      <div class="stat-pill"><div>WINS</div><span id="stW">0</span></div>
+      <div class="stat-pill"><div>LOSS</div><span id="stL">0</span></div>
+      <div class="stat-pill"><div>STREAK</div><span id="stS">0</span></div>
+      <div class="stat-pill"><div>ACCURACY</div><span id="stA">0%</span></div>
+    </div>
+
+    <div class="dashboard" id="dashboard">
+      <div id="recoveryTag" class="recovery-tag">● AI RECOVERING</div>
+      <div class="main-row">
+        <div class="data-group">
+          <span class="data-label">Next Period</span>
+          <span id="periodId" class="data-value">--------</span>
+        </div>
+        <div class="prediction-highlight">
+          <span class="data-label">Target Analysis</span>
+          <span id="predValue" class="data-value">Wait...</span>
+          <div class="confidence-box" id="confidenceLevel">Confidence: 0%</div>
+        </div>
+      </div>
+      <div style="margin-top: 15px; border-top: 1px solid #222; padding-top: 10px; display: flex; justify-content: space-between;">
+        <span style="font-size: 10px; color: var(--text-dim);" id="syncMsg">SYNCING 500 DATA...</span>
+        <span style="color: var(--primary); font-weight: 700;" id="timer">--:--</span>
+      </div>
+    </div>
+
+    <div class="history-card">
+      <div class="tab-nav">
+        <button id="tMine" class="tab-btn active" onclick="switchTab('mine')">PREDICTIONS</button>
+        <button id="tMarket" class="tab-btn" onclick="switchTab('market')">LIVE 500 MARKET</button>
+      </div>
+      <div class="table-container">
+        <table>
+          <thead id="hHead"></thead>
+          <tbody id="hBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="sync-status">Developed by: ◈•° 𝑲𝒊𝒏𝒈 𝑺𝒐𝒊𝒌𝒂𝒕 𝑩𝒂𝒉𝒊 °•◈</div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="engine.js"></script>
+  <script src="ui.js"></script>
+</body>
+</html>
