@@ -11,7 +11,7 @@
 
   <div id="loginSection">
     <div class="login-box">
-      <div style="font-size: 18px; font-weight: 700; color: var(--primary);">◈•° 𝑲𝒊𝒏𝒈 𝑺𝒐𝒊𝒌𝒂𝒕 𝑩𝒂𝒉𝒊 °•◈</div>
+      <div class="brand-title">◈•° 𝑲𝒊𝒏𝒈 𝑺𝒐𝒊𝒌𝒂𝒕 𝑩𝒂𝒉𝒊 °•◈</div>
       <input type="password" id="pass" class="login-input" placeholder="ACCESS KEY">
       <button onclick="login()" class="login-btn">ENTER SYSTEM</button>
       <div id="errorMsg">❌ WRONG ACCESS KEY!</div>
@@ -22,35 +22,35 @@
     <div class="header">◈•° 𝑲𝒊𝒏𝒈 𝑺𝒐𝒊𝒌𝒂𝒕 𝑩𝒂𝒉𝒊 °•◈</div>
 
     <div class="stats-bar">
-      <div class="stat-pill"><div>WINS</div><span id="stW">0</span></div>
-      <div class="stat-pill"><div>LOSS</div><span id="stL">0</span></div>
-      <div class="stat-pill"><div>STREAK</div><span id="stS">0</span></div>
+      <div class="stat-pill"><div>WINS</div><span id="stW" style="color:var(--win)">0</span></div>
+      <div class="stat-pill"><div>LOSS</div><span id="stL" style="color:var(--loss)">0</span></div>
+      <div class="stat-pill"><div>STREAK</div><span id="stS" style="color:#ffae00">0</span></div>
       <div class="stat-pill"><div>ACCURACY</div><span id="stA">0%</span></div>
     </div>
 
     <div class="dashboard" id="dashboard">
-      <div id="recoveryTag" class="recovery-tag">● AI RECOVERING</div>
+      <div id="recoveryTag" class="recovery-tag">● AI SELF-CORRECTING</div>
       <div class="main-row">
         <div class="data-group">
-          <span class="data-label">Next Period</span>
+          <span class="data-label">Period</span>
           <span id="periodId" class="data-value">--------</span>
         </div>
         <div class="prediction-highlight">
           <span class="data-label">Target Analysis</span>
-          <span id="predValue" class="data-value">Wait...</span>
+          <span id="predValue" class="data-value">Analyzing...</span>
           <div class="confidence-box" id="confidenceLevel">Confidence: 0%</div>
         </div>
       </div>
-      <div style="margin-top: 15px; border-top: 1px solid #222; padding-top: 10px; display: flex; justify-content: space-between;">
-        <span style="font-size: 10px; color: var(--text-dim);" id="syncMsg">SYNCING 500 DATA...</span>
-        <span style="color: var(--primary); font-weight: 700;" id="timer">--:--</span>
+      <div class="dash-footer">
+        <span id="syncMsg">SYSTEM ONLINE (500)</span>
+        <span id="timer">--:--</span>
       </div>
     </div>
 
     <div class="history-card">
       <div class="tab-nav">
         <button id="tMine" class="tab-btn active" onclick="switchTab('mine')">PREDICTIONS</button>
-        <button id="tMarket" class="tab-btn" onclick="switchTab('market')">LIVE 500 MARKET</button>
+        <button id="tMarket" class="tab-btn" onclick="switchTab('market')">LIVE MARKET</button>
       </div>
       <div class="table-container">
         <table>
