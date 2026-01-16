@@ -3,23 +3,64 @@
   --win: #00f281; --loss: #ff3e3e; --violet: #aa00ff;
   --text-dim: #888; --rec-bg: #1a0a0a;
 }
-body { font-family: 'Outfit', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; }
+body {
+  font-family: 'Outfit', sans-serif; background: var(--bg); color: #fff;
+  margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center;
+  transition: background 0.5s ease;
+}
 body.recovery-active { background: var(--rec-bg); }
+
 #loginSection { height: 90vh; display: flex; align-items: center; justify-content: center; width: 100%; }
-.login-box { background: var(--card-bg); border: 1px solid #222; padding: 30px; border-radius: 20px; text-align: center; width: 280px; }
-.login-input { width: 100%; padding: 12px; margin: 15px 0; background: #1a1a1a; border: 1px solid #333; color: #fff; border-radius: 10px; text-align: center; box-sizing: border-box; }
-.login-btn { width: 100%; padding: 12px; background: var(--primary); color: #000; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; }
-.dashboard { background: var(--card-bg); border-radius: 20px; padding: 20px; border: 1px solid #222; margin-bottom: 20px; width: 100%; max-width: 400px; position: relative; box-sizing: border-box;}
-.stats-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 20px; width: 100%; max-width: 400px; }
-.stat-pill { background: var(--card-bg); padding: 8px; border-radius: 12px; border: 1px solid #222; text-align: center; }
-.stat-pill span { font-weight: 700; font-size: 13px; }
-.prediction-highlight { background: #1a1a1a; padding: 10px 15px; border-radius: 15px; border-left: 4px solid var(--primary); text-align: right; }
-.tab-nav { display: flex; background: #1a1a1a; }
-.tab-btn { flex: 1; padding: 12px; border: none; background: transparent; color: var(--text-dim); cursor: pointer; }
-.tab-btn.active { color: var(--primary); background: var(--card-bg); }
-.badge-win { color: var(--win); font-weight: bold; }
-.badge-loss { color: var(--loss); font-weight: bold; }
-.dot { height: 8px; width: 8px; border-radius: 50%; display: inline-block; margin: 0 2px; }
-.dot-red { background: var(--loss); } .dot-green { background: var(--win); } .dot-violet { background: var(--violet); }
-table { width: 100%; font-size: 12px; border-collapse: collapse; }
-td, th { padding: 12px; border-bottom: 1px solid #1a1a1a; text-align: center; }
+.login-box { background: var(--card-bg); border: 1px solid #222; padding: 30px; border-radius: 20px; text-align: center; width: 300px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+.brand-title { font-size: 18px; font-weight: 700; color: var(--primary); margin-bottom: 10px; }
+.login-input { width: 100%; padding: 12px; margin: 15px 0; background: #1a1a1a; border: 1px solid #333; color: #fff; border-radius: 10px; text-align: center; outline: none; box-sizing: border-box; }
+.login-btn { width: 100%; padding: 12px; background: var(--primary); color: #000; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; transition: 0.3s; }
+.login-btn:hover { opacity: 0.8; }
+#errorMsg { color: var(--loss); font-size: 12px; margin-top: 10px; display: none; font-weight: bold; }
+
+#mainApp { width: 100%; max-width: 450px; }
+.header { text-align: center; font-size: 16px; font-weight: 700; color: var(--primary); letter-spacing: 2px; margin-bottom: 20px; text-transform: uppercase; }
+
+.dashboard {
+  background: var(--card-bg); border-radius: 24px; padding: 20px;
+  border: 1px solid #222; margin-bottom: 20px; position: relative;
+}
+.recovery-tag {
+  display: none; font-size: 9px; color: #ff3e3e; border: 1px solid #ff3e3e;
+  padding: 2px 8px; border-radius: 10px; position: absolute; top: 15px; right: 20px;
+  animation: blink 0.8s infinite;
+}
+@keyframes blink { 50% { opacity: 0.3; } }
+
+.main-row { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+.data-group { text-align: left; }
+.data-label { color: var(--text-dim); font-size: 11px; text-transform: uppercase; }
+.data-value { font-size: 20px; font-weight: 700; display: block; }
+
+.prediction-highlight {
+  background: #1a1a1a; padding: 10px 20px; border-radius: 15px;
+  border-left: 4px solid var(--primary); text-align: right;
+}
+.confidence-box { font-size: 10px; margin-top: 5px; color: #ffae00; font-weight: bold; }
+.dash-footer { margin-top: 15px; border-top: 1px solid #222; padding-top: 10px; display: flex; justify-content: space-between; align-items: center; }
+#syncMsg { font-size: 10px; color: var(--text-dim); }
+#timer { color: var(--primary); font-weight: 700; }
+
+.stats-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 20px; }
+.stat-pill { background: var(--card-bg); padding: 8px 4px; border-radius: 12px; border: 1px solid #222; text-align: center; }
+.stat-pill div { font-size: 9px; color: var(--text-dim); margin-bottom: 4px; }
+.stat-pill span { font-size: 12px; font-weight: 700; }
+
+.history-card { background: var(--card-bg); border-radius: 20px; border: 1px solid #222; overflow: hidden; width: 100%; }
+.tab-nav { display: flex; background: #1a1a1a; padding: 5px; }
+.tab-btn { flex: 1; padding: 10px; border: none; background: transparent; color: var(--text-dim); cursor: pointer; font-size: 11px; font-weight: 600; }
+.tab-btn.active { background: var(--card-bg); color: var(--primary); border-radius: 12px; }
+
+.table-container { max-height: 400px; overflow-y: auto; }
+table { width: 100%; border-collapse: collapse; }
+th { font-size: 10px; color: var(--text-dim); padding: 12px; border-bottom: 1px solid #1a1a1a; }
+td { padding: 12px; font-size: 12px; border-bottom: 1px solid #1a1a1a; text-align: center; }
+
+.badge-win { color: var(--win); background: rgba(0,242,129,0.1); padding: 3px 8px; border-radius: 6px; font-size: 10px; }
+.badge-loss { color: var(--loss); background: rgba(255,62,62,0.1); padding: 3px 8px; border-radius: 6px; font-size: 10px; }
+.sync-status { font-size: 10px; color: var(--primary); margin-top: 15px; text-align: center; opacity: 0.6; }
