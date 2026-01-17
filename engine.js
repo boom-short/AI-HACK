@@ -1,8 +1,16 @@
+const state = {
+    bigHistory: [],
+    lossStreak: 0,
+    period: 0,
+    confidence: 0
+};
+
+// --- ১. লগইন ফাংশন (আপনার অরিজিনাল পাসওয়ার্ড সহ) ---
 function login() {
   const pass = document.getElementById('pass').value;
   if(pass === 'Soikat@#12') {
-    document.getElementById('loginSection').style.display='none';
-    document.getElementById('mainApp').style.display='block';
+    document.getElementById('loginSection').style.display = 'none';
+    document.getElementById('mainApp').style.display = 'block';
     if (typeof init === "function") init(); 
   } else { 
     document.getElementById('errorMsg').style.display = 'block';
@@ -10,6 +18,7 @@ function login() {
   }
 }
 
+// --- ২. ভিজ্যুয়াল ফাংশন (কালার এবং ডট দেখানোর জন্য) ---
 function getVisuals(n) {
   n = parseInt(n);
   let res = { dots: '', name: '', hex: '', size: n >= 5 ? 'BIG' : 'SMALL' };
@@ -29,119 +38,86 @@ function getVisuals(n) {
   return res;
 }
 
-// --- ৪টি বিশেষজ্ঞ এআই এর আলাদা ফাংশন ---
+// --- ৩. উন্নত এআই লজিকসমূহ ---
 
-function getVolatilityScore(history) {
-  let changes = 0;
-  const limit = Math.min(history.length, 10);
-  for (let i = 0; i < limit - 1; i++) {
-    const curr = parseInt(history[i].number) >= 5 ? 'B' : 'S';
-    const prev = parseInt(history[i+1].number) >= 5 ? 'B' : 'S';
-    if (curr !== prev) changes++;
-  }
-  return {
-    score: changes / (limit - 1),
-    counterLogic: parseInt(history[0].number) >= 5 ? 2 : 7 
+// প্যাটার্ন শনাক্তকরণ (BSBS বা BBSS)
+function detectAdvancedPattern(history) {
+  const results = history.slice(0, 4).map(h => parseInt(h.number) >= 5 ? 'B' : 'S').join('');
+  const patterns = {
+    'BSBS': 'B', // জিকজ্যাক ব্রেক
+    'SBSB': 'S',
+    'BBSS': 'B', // ডাবল ব্রেক
+    'SSBB': 'S'
   };
+  return patterns[results] || null;
 }
 
-function getTrendStrength(history) {
+// ট্রেন্ড শক্তি পরিমাপ (ড্রাগন চেক)
+function getTrendAnalysis(history) {
   let count = 1;
   const lastType = parseInt(history[0].number) >= 5 ? 'B' : 'S';
-  for (let i = 1; i < Math.min(history.length, 10); i++) {
+  for (let i = 1; i < Math.min(history.length, 6); i++) {
     if ((parseInt(history[i].number) >= 5 ? 'B' : 'S') === lastType) count++;
     else break;
   }
-  return {
-    isDragon: count >= 3, // ৩ বারের বেশি হলে ড্রাগন মুড
-    count: count,
-    confidence: count * 0.20,
-    trendResult: lastType === 'B' ? 8 : 2
-  };
+  return { isDragon: count >= 3, type: lastType, strength: count };
 }
 
-function detectFakePattern(history) {
-  const results = history.slice(0, 5).map(h => parseInt(h.number) >= 5 ? 'B' : 'S');
+// কোল্ড নাম্বার (যা অনেকক্ষণ আসেনি)
+function getColdNumber(history, type) {
+  const range = type === 'B' ? [5, 6, 7, 8, 9] : [0, 1, 2, 3, 4];
+  const counts = new Array(10).fill(0);
+  history.slice(0, 15).forEach(h => counts[parseInt(h.number)]++);
   
-  // ১. জিক-জ্যাক ফাঁদ (B-S-B-S)
-  const isZigZag = results[0] !== results[1] && results[1] !== results[2] && results[2] !== results[3];
-  
-  // ২. জোড়ায় জোড়ায় ফাঁদ (B-B-S-S)
-  const isDoubleDouble = results[0] === results[1] && results[1] !== results[2] && results[2] === results[3];
-
-  return {
-    isZigZag: isZigZag,
-    isDoubleDouble: isDoubleDouble,
-    isTrapDetected: isZigZag || isDoubleDouble
-  };
+  let cold = range[0];
+  let min = counts[range[0]];
+  range.forEach(n => {
+    if(counts[n] < min) { min = counts[n]; cold = n; }
+  });
+  return cold;
 }
 
-function fibonacciAnalysis() {
-  const period = state.period ? state.period.toString() : "0";
-  const lastDigit = parseInt(period.slice(-1));
-  const fibSeries = [0, 1, 2, 3, 5, 8];
-  return {
-    isFibTime: fibSeries.includes(lastDigit),
-    recommendation: lastDigit % 2 === 0 ? 3 : 6 
-  };
-}
-
-// --- মাস্টার এআই (কোর ইঞ্জিন) ---
+// --- ৪. মাস্টার সলভ ফাংশন (কোর ইঞ্জিন) ---
 
 function solve() {
-  const history = state.bigHistory; 
+  const history = state.bigHistory;
 
-  const isLoss = state.lossStreak >= 1;
-  document.body.classList.toggle('recovery-active', isLoss);
-  if(document.getElementById('recoveryTag')) {
-      document.getElementById('recoveryTag').style.display = isLoss ? 'block' : 'none';
-  }
-
+  // ডেটা না থাকলে র‍্যান্ডম
   if (!history || history.length < 5) {
-    state.confidence = 50;
+    state.confidence = 40;
     return Math.floor(Math.random() * 10);
   }
 
-  const exp1 = getVolatilityScore(history); // অস্থিরতা
-  const exp2 = getTrendStrength(history);   // ট্রেন্ড
-  const exp3 = detectFakePattern(history); // ফাঁদ
-  const exp4 = fibonacciAnalysis();         // টাইম
+  const trend = getTrendAnalysis(history);
+  const pattern = detectAdvancedPattern(history);
+  const lastRes = parseInt(history[0].number) >= 5 ? 'B' : 'S';
 
-  const results = history.slice(0, 5).map(h => parseInt(h.number) >= 5 ? 'B' : 'S');
+  let finalType = '';
 
-  // ১. ড্রাগন ট্রেন্ড (একদিকে টানা) - সবচেয়ে হাই প্রায়োরিটি
-  if (exp2.isDragon) {
-    state.confidence = 98;
-    // মার্কেট যেটা দিচ্ছে সেটাই দিন (স্মল দিলে স্মল, বিগ দিলে বিগ)
-    const options = results[0] === 'B' ? [6, 7, 8, 9] : [1, 2, 3, 4];
-    return options[Math.floor(Math.random() * options.length)];
+  // ক্যাসকেডিং ডিসিশন লজিক
+  if (trend.isDragon && trend.strength >= 4) {
+    // ড্রাগন মোড: ট্রেন্ডের সাথে চলুন
+    state.confidence = 88;
+    finalType = trend.type;
+  } else if (pattern) {
+    // স্পেশাল প্যাটার্ন মোড
+    state.confidence = 82;
+    finalType = pattern;
+  } else {
+    // ডিফল্ট: লাস্ট ট্রেন্ডের বিপরীত (Counter Logic)
+    state.confidence = 65;
+    finalType = lastRes === 'B' ? 'S' : 'B';
   }
 
-  // ২. জিক-জ্যাক ফাঁদ (B-S-B-S) হ্যান্ডলিং
-  if (exp3.isZigZag) {
-    state.confidence = 95;
-    // নাচানাচি করলে লাস্টের ঠিক উল্টোটা দিন
-    return results[0] === 'B' ? 2 : 7;
+  // রিকভারি মোড চেক
+  if (state.lossStreak >= 1) {
+    document.body.classList.add('recovery-active');
+    state.confidence += 5; // সতর্কবার্তা হিসেবে
+  } else {
+    document.body.classList.remove('recovery-active');
   }
 
-  // ৩. জোড়ায় জোড়ায় ফাঁদ (B-B-S-S) হ্যান্ডলিং
-  if (exp3.isDoubleDouble) {
-    state.confidence = 92;
-    // জোড়া ভাঙার সময় হয়েছে, তাই লাস্টের উল্টোটা ধরুন
-    return results[0] === 'B' ? 3 : 8;
-  }
+  return getColdNumber(history, finalType);
+}
 
-  // ৪. ডাইনামিক ডিসিশন (মার্কেট কন্ডিশন অনুযায়ী)
-  if (exp1.score > 0.7) {
-    state.confidence = 80;
-    return exp1.counterLogic;
-  } else if (exp4.isFibTime) {
-    state.confidence = 75;
-    return exp4.recommendation;
-  }
-
-  // ডিফল্ট: মার্কেট যা দিচ্ছে তার ছায়া অনুসরণ (Sticky Logic)
-  state.confidence = 70;
-  return results[0] === 'B' ? 8 : 1;
-    }
-  
+// নোট: init() ফাংশনটি আপনার ডাটা ফেচ করার জন্য ব্যবহৃত হবে।
