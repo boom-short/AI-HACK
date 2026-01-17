@@ -1,16 +1,8 @@
-const state = {
-    bigHistory: [],
-    lossStreak: 0,
-    period: 0,
-    confidence: 0
-};
-
-// --- ১. লগইন ফাংশন (আপনার অরিজিনাল পাসওয়ার্ড সহ) ---
 function login() {
   const pass = document.getElementById('pass').value;
   if(pass === 'Soikat@#12') {
-    document.getElementById('loginSection').style.display = 'none';
-    document.getElementById('mainApp').style.display = 'block';
+    document.getElementById('loginSection').style.display='none';
+    document.getElementById('mainApp').style.display='block';
     if (typeof init === "function") init(); 
   } else { 
     document.getElementById('errorMsg').style.display = 'block';
@@ -18,7 +10,6 @@ function login() {
   }
 }
 
-// --- ২. ভিজ্যুয়াল ফাংশন (কালার এবং ডট দেখানোর জন্য) ---
 function getVisuals(n) {
   n = parseInt(n);
   let res = { dots: '', name: '', hex: '', size: n >= 5 ? 'BIG' : 'SMALL' };
@@ -38,86 +29,61 @@ function getVisuals(n) {
   return res;
 }
 
-// --- ৩. উন্নত এআই লজিকসমূহ ---
-
-// প্যাটার্ন শনাক্তকরণ (BSBS বা BBSS)
-function detectAdvancedPattern(history) {
-  const results = history.slice(0, 4).map(h => parseInt(h.number) >= 5 ? 'B' : 'S').join('');
-  const patterns = {
-    'BSBS': 'B', // জিকজ্যাক ব্রেক
-    'SBSB': 'S',
-    'BBSS': 'B', // ডাবল ব্রেক
-    'SSBB': 'S'
-  };
-  return patterns[results] || null;
+// --- নতুন ২০২৬ রিস্ক ম্যানেজমেন্ট (Martingale 2.0) ---
+function calculateNextStake() {
+    const baseBet = 10; // আপনার বেজ বেট
+    const multiplier = 2.5; // Martingale 2.0
+    // state.lossStreak অন্য ফাইল থেকে অটোমেটিক রিড হবে
+    const amount = baseBet * Math.pow(multiplier, state.lossStreak || 0);
+    return amount > (state.balance || 1000) ? state.balance : amount;
 }
 
-// ট্রেন্ড শক্তি পরিমাপ (ড্রাগন চেক)
-function getTrendAnalysis(history) {
-  let count = 1;
-  const lastType = parseInt(history[0].number) >= 5 ? 'B' : 'S';
-  for (let i = 1; i < Math.min(history.length, 6); i++) {
-    if ((parseInt(history[i].number) >= 5 ? 'B' : 'S') === lastType) count++;
-    else break;
-  }
-  return { isDragon: count >= 3, type: lastType, strength: count };
-}
-
-// কোল্ড নাম্বার (যা অনেকক্ষণ আসেনি)
-function getColdNumber(history, type) {
-  const range = type === 'B' ? [5, 6, 7, 8, 9] : [0, 1, 2, 3, 4];
-  const counts = new Array(10).fill(0);
-  history.slice(0, 15).forEach(h => counts[parseInt(h.number)]++);
-  
-  let cold = range[0];
-  let min = counts[range[0]];
-  range.forEach(n => {
-    if(counts[n] < min) { min = counts[n]; cold = n; }
-  });
-  return cold;
-}
-
-// --- ৪. মাস্টার সলভ ফাংশন (কোর ইঞ্জিন) ---
+// --- মাস্টার এআই সলভার (সব বিশেষজ্ঞ বাদ দিয়ে নতুন লজিক) ---
 
 function solve() {
-  const history = state.bigHistory;
+  // state.bigHistory সরাসরি অন্য ফাইল থেকে এক্সেস হচ্ছে
+  const history = state.bigHistory; 
 
-  // ডেটা না থাকলে র‍্যান্ডম
   if (!history || history.length < 5) {
-    state.confidence = 40;
-    return Math.floor(Math.random() * 10);
+    state.confidence = 50;
+    return { pick: 'WAIT', number: Math.floor(Math.random() * 10), stake: calculateNextStake() };
   }
 
-  const trend = getTrendAnalysis(history);
-  const pattern = detectAdvancedPattern(history);
-  const lastRes = parseInt(history[0].number) >= 5 ? 'B' : 'S';
-
-  let finalType = '';
-
-  // ক্যাসকেডিং ডিসিশন লজিক
-  if (trend.isDragon && trend.strength >= 4) {
-    // ড্রাগন মোড: ট্রেন্ডের সাথে চলুন
-    state.confidence = 88;
-    finalType = trend.type;
-  } else if (pattern) {
-    // স্পেশাল প্যাটার্ন মোড
-    state.confidence = 82;
-    finalType = pattern;
-  } else {
-    // ডিফল্ট: লাস্ট ট্রেন্ডের বিপরীত (Counter Logic)
-    state.confidence = 65;
-    finalType = lastRes === 'B' ? 'S' : 'B';
+  // ১. ড্রাগন ট্রেন্ড শনাক্তকরণ (Dragon Trend Logic)
+  let streak = 1;
+  const lastType = parseInt(history[0].number) >= 5 ? 'BIG' : 'SMALL';
+  for (let i = 1; i < Math.min(history.length, 10); i++) {
+    const currentType = parseInt(history[i].number) >= 5 ? 'BIG' : 'SMALL';
+    if (currentType === lastType) streak++;
+    else break;
   }
 
-  // রিকভারি মোড চেক
-  if (state.lossStreak >= 1) {
-    document.body.classList.add('recovery-active');
-    state.confidence += 5; // সতর্কবার্তা হিসেবে
-  } else {
-    document.body.classList.remove('recovery-active');
+  let predictedNumber;
+  
+  // লজিক ১: যদি ড্রাগন ট্রেন্ড ৪ এর বেশি হয় (High Confidence 90%+)
+  if (streak >= 4) {
+    state.confidence = 92;
+    predictedNumber = lastType === 'BIG' ? 8 : 2; 
+  } 
+  // লজিক ২: যদি ট্রেন্ড ব্রেক হওয়ার সম্ভাবনা থাকে (Volatility Logic)
+  else if (streak === 1) {
+    state.confidence = 80;
+    // আগেরটা ছোট হলে এবার বড় হওয়ার সম্ভাবনা
+    predictedNumber = parseInt(history[0].number) < 5 ? 7 : 3;
+  }
+  // লজিক ৩: ডিফল্ট সেফ জোন (Fibonacci Reset)
+  else {
+    state.confidence = 70;
+    const periodStr = state.period ? state.period.toString() : "0";
+    const lastDigit = parseInt(periodStr.slice(-1));
+    predictedNumber = lastDigit % 2 === 0 ? 6 : 1;
   }
 
-  return getColdNumber(history, finalType);
-}
-
-// নোট: init() ফাংশনটি আপনার ডাটা ফেচ করার জন্য ব্যবহৃত হবে।
+  // রেজাল্ট রিটার্ন
+  return {
+    number: predictedNumber,
+    type: predictedNumber >= 5 ? 'BIG' : 'SMALL',
+    stake: calculateNextStake(),
+    visuals: getVisuals(predictedNumber)
+  };
+        }
