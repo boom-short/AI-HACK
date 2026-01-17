@@ -2,54 +2,58 @@ async function fetchUpdate() {
   try {
     const r = await fetch(`${API_URL}?ts=${Date.now()}`);
     const d = await r.json();
-    if(d.code === 0 && d.data.list) {
-      const newList = d.data.list;
-      const latestIssue = newList[0].issueNumber;
+    if(d.code === 0) {
+      const list = d.data.list;
+      if(list[0].issueNumber !== state.lastPeriod) {
+        state.bigHistory = list;
 
-      if(latestIssue !== state.lastPeriod) {
-        // --- ৫০০ ডাটা সিঙ্কিং ---
-        if(state.bigHistory.length === 0) {
-          state.bigHistory = newList.slice(0, 500);
-        } else {
-          // নতুন ডাটা ঢুকবে, পুরনো ডিলিট হবে (১ সেকেন্ডের মধ্যে)
-          newList.reverse().forEach(item => {
-            if(BigInt(item.issueNumber) > BigInt(state.lastPeriod || 0)) {
-              state.bigHistory.unshift(item);
-              if(state.bigHistory.length > 500) state.bigHistory.pop();
-            }
-          });
-        }
-
-        // --- উইন/লস চেক ---
         if(state.predictions.length > 0 && state.predictions[0].status === 'PENDING') {
           const p = state.predictions[0];
-          const actNum = parseInt(newList.find(x => x.issueNumber === p.period)?.number || newList[0].number);
-          const isWin = (actNum >= 5 && p.size === 'BIG') || (actNum < 5 && p.size === 'SMALL');
-          p.status = isWin ? 'WIN' : 'LOSS';
+          const actNum = parseInt(list[0].number);
+          const actVis = getVisuals(actNum);
+          const predVis = getVisuals(p.num);
+          
           p.actualNum = actNum;
-          if(isWin) { state.stats.w++; state.lossStreak = 0; }
-          else { state.stats.l++; state.lossStreak++; }
+          if(p.num === actNum || predVis.size === actVis.size) {
+            p.status = 'WIN'; state.stats.w++; state.lossStreak = 0;
+          } else {
+            p.status = 'LOSS'; state.stats.l++; state.lossStreak++;
+          }
           refreshStats();
         }
 
-        // --- নতুন প্রেডিকশন ---
-        const nextP = String(BigInt(latestIssue) + 1n);
+        const nextP = String(BigInt(list[0].issueNumber) + 1n);
         const pNum = solve();
         const pVis = getVisuals(pNum);
-        state.predictions.unshift({ period: nextP, num: pNum, size: pVis.size, status: 'PENDING', actualNum: '?' });
-        if(state.predictions.length > 100) state.predictions.pop();
-
-        // UI Update
+        
+        state.predictions.unshift({ 
+          period: nextP, 
+          num: pNum, 
+          size: pVis.size, 
+          color: pVis.name, 
+          status: 'PENDING', 
+          actualNum: '?' 
+        });
+        
         document.getElementById('periodId').textContent = nextP.slice(-5);
-        document.getElementById('predValue').innerHTML = `${pVis.size} (${pNum})`;
-        document.getElementById('predValue').style.color = pVis.hex;
+        const pVal = document.getElementById('predValue');
+        pVal.innerHTML = `${pVis.size} (${pNum}) <br><span style="font-size:12px; color:${pVis.hex}">${pVis.name}</span>`;
+        pVal.style.color = pVis.hex;
         document.getElementById('confidenceLevel').textContent = `Confidence: ${state.confidence}%`;
         
-        state.lastPeriod = latestIssue;
+        state.lastPeriod = list[0].issueNumber;
       }
+      state.market = list;
       render();
     }
-  } catch(e) { console.log("Re-syncing..."); }
+  } catch(e){}
+}
+
+function updateTimer() {
+  const sec = new Date().getSeconds();
+  const rem = 30 - (sec % 30);
+  document.getElementById('timer').textContent = "00:" + (rem < 10 ? "0"+rem : rem);
+  if(rem === 1) fetchUpdate();
 }
 
 function refreshStats() {
@@ -58,22 +62,33 @@ function refreshStats() {
   document.getElementById('stS').textContent = state.lossStreak;
   const total = state.stats.w + state.stats.l;
   document.getElementById('stA').textContent = total > 0 ? Math.round((state.stats.w/total)*100)+'%' : '0%';
-  document.body.classList.toggle('recovery-active', state.lossStreak >= 1);
 }
 
 function render() {
   const body = document.getElementById('hBody');
   const head = document.getElementById('hHead');
   body.innerHTML = "";
+
   if(state.currentTab === 'mine') {
-    head.innerHTML = "<tr><th>Period</th><th>Pred</th><th>Real</th><th>Res</th></tr>";
-    state.predictions.filter(p => p.status !== 'PENDING').slice(0, 10).forEach(i => {
-      body.innerHTML += `<tr><td>${i.period.slice(-4)}</td><td>${i.size}</td><td>${i.actualNum}</td><td><span class="badge-${i.status.toLowerCase()}">${i.status}</span></td></tr>`;
+    head.innerHTML = "<tr><th>Period</th><th>Prediction</th><th>Actual</th><th>Result</th></tr>";
+    state.predictions.filter(p => p.status !== 'PENDING').slice(0, 15).forEach(i => {
+      body.innerHTML += `<tr>
+        <td>${i.period.slice(-4)}</td>
+        <td style="font-weight:700">${i.size} (${i.num})</td>
+        <td style="font-weight:700">${i.actualNum}</td>
+        <td><span class="${i.status === 'WIN' ? 'badge-win' : 'badge-loss'}">${i.status}</span></td>
+      </tr>`;
     });
   } else {
-    head.innerHTML = "<tr><th>Period</th><th>Num</th><th>Size</th></tr>";
-    state.bigHistory.slice(0, 15).forEach(m => {
-      body.innerHTML += `<tr><td>${m.issueNumber.slice(-4)}</td><td>${m.number}</td><td>${parseInt(m.number)>=5?'BIG':'SMALL'}</td></tr>`;
+    head.innerHTML = "<tr><th>Period</th><th>Number</th><th>Visual</th><th>Size</th></tr>";
+    state.market.slice(0, 15).forEach(m => {
+      const v = getVisuals(m.number);
+      body.innerHTML += `<tr>
+        <td>${m.issueNumber.slice(-4)}</td>
+        <td style="font-weight:700">${m.number}</td>
+        <td>${v.dots} ${v.name}</td>
+        <td>${v.size}</td>
+      </tr>`;
     });
   }
 }
@@ -87,9 +102,6 @@ function switchTab(t) {
 
 function init() {
   fetchUpdate();
-  setInterval(fetchUpdate, 1000); // ১ সেকেন্ড স্পিড
-  setInterval(() => {
-    const rem = 30 - (new Date().getSeconds() % 30);
-    document.getElementById('timer').textContent = "00:" + (rem < 10 ? "0"+rem : rem);
-  }, 1000);
-    }
+  setInterval(fetchUpdate, 2000);
+  setInterval(updateTimer, 1000);
+}
