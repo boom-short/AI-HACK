@@ -34,46 +34,40 @@ function getVisuals(n) {
     return res;
 }
 
-// ৩. AI প্রেডিকশন ইঞ্জিন (Solve Function - UI.js এর রিকয়ারমেন্ট অনুযায়ী)
+// ৩. AI প্রেডিকশন ইঞ্জিন (Solve Function - আপনার দেওয়া লজিক)
 function solve() {
-    // ৫০০ ডাটার বড় হিস্ট্রি থেকে এনালাইসিস শুরু
     if (!state.bigHistory || state.bigHistory.length < 10) {
         state.confidence = 50;
         return Math.floor(Math.random() * 10);
     }
 
-    // শেষ ১০টি রেজাল্ট থেকে প্যাটার্ন সংগ্রহ
     const lastTen = state.bigHistory.slice(0, 10).map(i => parseInt(i.number));
-    
-    // ট্রেন্ড এনালাইসিস: ড্রাগন নাকি জিকজ্যাক?
     const isBig = lastTen[0] >= 5;
     const isSecondBig = lastTen[1] >= 5;
     
     let targetSize = '';
     
-    // যদি গত ২ বার একই জিনিস আসে তবে তৃতীয়বারও আসার সম্ভাবনা বেশি (Trend Follow)
     if (isBig === isSecondBig) {
         targetSize = isBig ? 'BIG' : 'SMALL';
         state.confidence = 82;
     } else {
-        // যদি জিকজ্যাক মোড হয়
         targetSize = isBig ? 'SMALL' : 'BIG';
         state.confidence = 74;
     }
 
-    // লস স্ট্রিক ম্যানেজমেন্ট এবং সেলফ কারেক্টিং মুড
     if (state.lossStreak >= 1) {
-        document.getElementById('recoveryTag').style.display = 'block';
+        const recTag = document.getElementById('recoveryTag');
+        if(recTag) recTag.style.display = 'block';
         document.body.classList.add('recovery-active');
         document.getElementById('dashboard').classList.add('aggro');
-        state.confidence = 96; // রিকভারি টাইমে কনফিডেন্স বুস্ট
+        state.confidence = 96;
     } else {
-        document.getElementById('recoveryTag').style.display = 'none';
+        const recTag = document.getElementById('recoveryTag');
+        if(recTag) recTag.style.display = 'none';
         document.body.classList.remove('recovery-active');
         document.getElementById('dashboard').classList.remove('aggro');
     }
 
-    // চূড়ান্ত নাম্বার রিটার্ন করা
     const bigNumbers = [5, 6, 7, 8, 9];
     const smallNumbers = [0, 1, 2, 3, 4];
     const pool = targetSize === 'BIG' ? bigNumbers : smallNumbers;
