@@ -1,4 +1,5 @@
-async function fetchUpdate() {
+  //ui.js
+  async function fetchUpdate() {
   try {
     const r = await fetch(`${API_URL}?ts=${Date.now()}`);
     const d = await r.json();
