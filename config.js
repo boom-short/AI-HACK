@@ -1,3 +1,4 @@
+//config.js
 const API_URL = 'https://draw.ar-lottery01.com/WinGo/WinGo_30S/GetHistoryIssuePage.json';
 
 let state = {
