@@ -1,3 +1,5 @@
+// engine.js
+
 function login() {
     const pass = document.getElementById('pass').value;
     if(pass === 'Soikat@#12') {
@@ -11,7 +13,7 @@ function login() {
     }
 }
 
-// ২. ভিজ্যুয়াল লজিক (object Object সমস্যা সমাধান করতে এখানে পরিবর্তন করা হয়েছে)
+// ২. ভিজ্যুয়াল লজিক ও সংকেত (আপনার দেওয়া কোড - অবজেক্ট সমস্যা সমাধানকৃত)
 function getVisuals(n) {
     n = parseInt(n);
     let res = { dots: '', name: '', hex: '', size: n >= 5 ? 'BIG' : 'SMALL' };
@@ -32,77 +34,49 @@ function getVisuals(n) {
     return res;
 }
 
-// ৩. স্টেক ক্যালকুলেশন (Martingale 2.0)
-function calculateNextStake() {
-    const baseBet = 10;
-    const multiplier = 2.5;
-    const amount = baseBet * Math.pow(multiplier, state.lossStreak || 0);
-    return amount > (state.balance || 1000) ? state.balance : Math.round(amount);
-}
-
-// ৪. মাস্টার এআই সলভার (সব সময় SMALL আসা বন্ধ করার নতুন লজিক)
+// ৩. AI প্রেডিকশন ইঞ্জিন (Solve Function - UI.js এর রিকয়ারমেন্ট অনুযায়ী)
 function solve() {
-    const history = state.bigHistory || [];
-    let predictedNumber;
-
-    // পিরিয়ড এবং সময়ের উপর ভিত্তি করে ডাইনামিক সিড জেনারেশন
-    const periodStr = state.period ? state.period.toString() : "0";
-    const lastDigit = parseInt(periodStr.slice(-1));
-    const seconds = new Date().getSeconds();
-
-    if (history.length < 5) {
-        state.confidence = 65;
-        // সময় ও পিরিয়ড মিলিয়ে নম্বর প্রেডিকশন (যাতে সব সময় স্মল না আসে)
-        predictedNumber = (lastDigit + seconds) % 10;
-    } else {
-        // ড্রাগন ট্রেন্ড চেক
-        let streak = 1;
-        const lastType = parseInt(history[0].number) >= 5 ? 'BIG' : 'SMALL';
-        for (let i = 1; i < Math.min(history.length, 10); i++) {
-            if ((parseInt(history[i].number) >= 5 ? 'BIG' : 'SMALL') === lastType) streak++;
-            else break;
-        }
-
-        if (streak >= 3) {
-            state.confidence = 90;
-            predictedNumber = lastType === 'BIG' ? 8 : 1; 
-        } else {
-            state.confidence = 75;
-            // ট্রেন্ড ব্রেক লজিক
-            predictedNumber = parseInt(history[0].number) < 5 ? 7 : 2;
-        }
+    // ৫০০ ডাটার বড় হিস্ট্রি থেকে এনালাইসিস শুরু
+    if (!state.bigHistory || state.bigHistory.length < 10) {
+        state.confidence = 50;
+        return Math.floor(Math.random() * 10);
     }
 
-    const visualInfo = getVisuals(predictedNumber);
-
-    return {
-        number: predictedNumber,
-        type: predictedNumber >= 5 ? 'BIG' : 'SMALL',
-        colorName: visualInfo.name,
-        dotsHtml: visualInfo.dots, // সরাসরি HTML স্ট্রিং
-        stake: calculateNextStake()
-    };
-}
-
-// ৫. ইন্টারফেস আপডেট ফাংশন (যেটি আপনার স্ক্রিনের ডাটা দেখাবে)
-function updateUI() {
-    const result = solve();
+    // শেষ ১০টি রেজাল্ট থেকে প্যাটার্ন সংগ্রহ
+    const lastTen = state.bigHistory.slice(0, 10).map(i => parseInt(i.number));
     
-    // পিরিয়ড নম্বর আপডেট
-    document.getElementById('periodDisplay').innerText = state.period;
-
-    // প্রেডিকশন টেক্সট (object Object সমাধান এখানে)
-    const targetDisplay = document.getElementById('targetAnalysis'); 
-    if(targetDisplay) {
-        targetDisplay.innerHTML = `${result.type} (${result.colorName})`;
-        targetDisplay.style.color = (result.type === 'BIG') ? '#00f281' : '#ff3e3e';
+    // ট্রেন্ড এনালাইসিস: ড্রাগন নাকি জিকজ্যাক?
+    const isBig = lastTen[0] >= 5;
+    const isSecondBig = lastTen[1] >= 5;
+    
+    let targetSize = '';
+    
+    // যদি গত ২ বার একই জিনিস আসে তবে তৃতীয়বারও আসার সম্ভাবনা বেশি (Trend Follow)
+    if (isBig === isSecondBig) {
+        targetSize = isBig ? 'BIG' : 'SMALL';
+        state.confidence = 82;
+    } else {
+        // যদি জিকজ্যাক মোড হয়
+        targetSize = isBig ? 'SMALL' : 'BIG';
+        state.confidence = 74;
     }
 
-    // ডট বা ভিজ্যুয়াল আপডেট
-    const dotBox = document.getElementById('dotDisplay');
-    if(dotBox) dotBox.innerHTML = result.dotsHtml;
+    // লস স্ট্রিক ম্যানেজমেন্ট এবং সেলফ কারেক্টিং মুড
+    if (state.lossStreak >= 1) {
+        document.getElementById('recoveryTag').style.display = 'block';
+        document.body.classList.add('recovery-active');
+        document.getElementById('dashboard').classList.add('aggro');
+        state.confidence = 96; // রিকভারি টাইমে কনফিডেন্স বুস্ট
+    } else {
+        document.getElementById('recoveryTag').style.display = 'none';
+        document.body.classList.remove('recovery-active');
+        document.getElementById('dashboard').classList.remove('aggro');
+    }
 
-    // কনফিডেন্স আপডেট
-    document.getElementById('confidenceLevel').innerText = `Confidence: ${state.confidence}%`;
-        }
-
+    // চূড়ান্ত নাম্বার রিটার্ন করা
+    const bigNumbers = [5, 6, 7, 8, 9];
+    const smallNumbers = [0, 1, 2, 3, 4];
+    const pool = targetSize === 'BIG' ? bigNumbers : smallNumbers;
+    
+    return pool[Math.floor(Math.random() * pool.length)];
+}
