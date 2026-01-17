@@ -1,5 +1,3 @@
-// --- engine.js (Refined & Complete) ---
-
 function login() {
   const pass = document.getElementById('pass').value;
   if(pass === 'Soikat@#12') {
@@ -33,7 +31,6 @@ function getVisuals(n) {
 
 // --- ৪টি বিশেষজ্ঞ এআই এর আলাদা ফাংশন ---
 
-// ১. Volatility Scout (অস্থিরতা পরিমাপ)
 function getVolatilityScore(history) {
   let changes = 0;
   const limit = Math.min(history.length, 10);
@@ -48,7 +45,6 @@ function getVolatilityScore(history) {
   };
 }
 
-// ২. Trend Watcher (ড্রাগন ট্রেন্ড শনাক্তকরণ)
 function getTrendStrength(history) {
   let count = 1;
   const lastType = parseInt(history[0].number) >= 5 ? 'B' : 'S';
@@ -57,23 +53,29 @@ function getTrendStrength(history) {
     else break;
   }
   return {
-    isDragon: count >= 4,
-    confidence: count * 0.15,
+    isDragon: count >= 3, // ৩ বারের বেশি হলে ড্রাগন মুড
+    count: count,
+    confidence: count * 0.20,
     trendResult: lastType === 'B' ? 8 : 2
   };
 }
 
-// ৩. Fake Pattern Detector (ট্র্যাপ শনাক্তকরণ)
 function detectFakePattern(history) {
-  const lastThree = history.slice(0, 3).map(h => parseInt(h.number) >= 5 ? 'B' : 'S');
-  const isTrap = (lastThree[1] === lastThree[2]) && (lastThree[0] !== lastThree[1]);
+  const results = history.slice(0, 5).map(h => parseInt(h.number) >= 5 ? 'B' : 'S');
+  
+  // ১. জিক-জ্যাক ফাঁদ (B-S-B-S)
+  const isZigZag = results[0] !== results[1] && results[1] !== results[2] && results[2] !== results[3];
+  
+  // ২. জোড়ায় জোড়ায় ফাঁদ (B-B-S-S)
+  const isDoubleDouble = results[0] === results[1] && results[1] !== results[2] && results[2] === results[3];
+
   return {
-    isTrapDetected: isTrap,
-    safeExit: lastThree[1] === 'B' ? 7 : 2 
+    isZigZag: isZigZag,
+    isDoubleDouble: isDoubleDouble,
+    isTrapDetected: isZigZag || isDoubleDouble
   };
 }
 
-// ৪. Fibonacci Time Analyst (টাইম সিরিজ বিশ্লেষণ)
 function fibonacciAnalysis() {
   const period = state.period ? state.period.toString() : "0";
   const lastDigit = parseInt(period.slice(-1));
@@ -89,53 +91,57 @@ function fibonacciAnalysis() {
 function solve() {
   const history = state.bigHistory; 
 
-  // রিকভারি মোড UI আপডেট (লস হলে ড্যাশবোর্ড এগ্রেসিভ হবে)
   const isLoss = state.lossStreak >= 1;
   document.body.classList.toggle('recovery-active', isLoss);
   if(document.getElementById('recoveryTag')) {
       document.getElementById('recoveryTag').style.display = isLoss ? 'block' : 'none';
   }
 
-  // হিস্ট্রি না থাকলে র‍্যান্ডম প্রেডিকশন
   if (!history || history.length < 5) {
     state.confidence = 50;
     return Math.floor(Math.random() * 10);
   }
 
-  const exp1 = getVolatilityScore(history);
-  const exp2 = getTrendStrength(history);
-  const exp3 = detectFakePattern(history);
-  const exp4 = fibonacciAnalysis();
+  const exp1 = getVolatilityScore(history); // অস্থিরতা
+  const exp2 = getTrendStrength(history);   // ট্রেন্ড
+  const exp3 = detectFakePattern(history); // ফাঁদ
+  const exp4 = fibonacciAnalysis();         // টাইম
 
-  // ১. ড্রাগন ট্রেন্ড প্রায়োরিটি (সবচেয়ে কার্যকর)
-  if (exp2.isDragon && exp2.confidence > 0.7) {
-    state.confidence = 90;
-    return exp2.trendResult; 
+  const results = history.slice(0, 5).map(h => parseInt(h.number) >= 5 ? 'B' : 'S');
+
+  // ১. ড্রাগন ট্রেন্ড (একদিকে টানা) - সবচেয়ে হাই প্রায়োরিটি
+  if (exp2.isDragon) {
+    state.confidence = 98;
+    // মার্কেট যেটা দিচ্ছে সেটাই দিন (স্মল দিলে স্মল, বিগ দিলে বিগ)
+    const options = results[0] === 'B' ? [6, 7, 8, 9] : [1, 2, 3, 4];
+    return options[Math.floor(Math.random() * options.length)];
   }
 
-  // ২. ট্র্যাপ ডিটেক্টর প্রায়োরিটি
-  if (exp3.isTrapDetected) {
-    state.confidence = 85;
-    return exp3.safeExit;
+  // ২. জিক-জ্যাক ফাঁদ (B-S-B-S) হ্যান্ডলিং
+  if (exp3.isZigZag) {
+    state.confidence = 95;
+    // নাচানাচি করলে লাস্টের ঠিক উল্টোটা দিন
+    return results[0] === 'B' ? 2 : 7;
   }
 
-  // ৩. ডাইনামিক ওয়েটেড ডিসিশন (মার্কেট কন্ডিশন অনুযায়ী)
-  let pNum;
+  // ৩. জোড়ায় জোড়ায় ফাঁদ (B-B-S-S) হ্যান্ডলিং
+  if (exp3.isDoubleDouble) {
+    state.confidence = 92;
+    // জোড়া ভাঙার সময় হয়েছে, তাই লাস্টের উল্টোটা ধরুন
+    return results[0] === 'B' ? 3 : 8;
+  }
+
+  // ৪. ডাইনামিক ডিসিশন (মার্কেট কন্ডিশন অনুযায়ী)
   if (exp1.score > 0.7) {
-    // অস্থির মার্কেটে কাউন্টার লজিক
-    pNum = exp1.counterLogic;
     state.confidence = 80;
+    return exp1.counterLogic;
   } else if (exp4.isFibTime) {
-    // ফিবোনাচ্চি পিরিয়ড রিসেট লজিক
-    pNum = exp4.recommendation;
     state.confidence = 75;
-  } else {
-    // সাধারণ ক্যালকুলেশন (রেন্ডমাইজড সেফ জোন)
-    const lastNum = parseInt(history[0].number);
-    const options = lastNum >= 5 ? [6, 7, 8] : [1, 2, 3];
-    pNum = options[Math.floor(Math.random() * options.length)];
-    state.confidence = 70;
+    return exp4.recommendation;
   }
 
-  return Math.round(pNum);
-}
+  // ডিফল্ট: মার্কেট যা দিচ্ছে তার ছায়া অনুসরণ (Sticky Logic)
+  state.confidence = 70;
+  return results[0] === 'B' ? 8 : 1;
+    }
+  
