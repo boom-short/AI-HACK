@@ -11,20 +11,20 @@
 
   <div id="loginSection">
     <div class="login-box">
-      <div class="brand-title">◈•° 𝑲𝒊𝒏𝒈 𝑺𝒐𝒊𝒌𝒂𝒕 𝑩𝒂𝒉𝒊 °•◈</div>
+      <div style="font-size: 18px; font-weight: 700; color: var(--primary);">◈•° 𝑲𝒊𝒏𝒈 𝑺𝒐𝒊𝒌𝒂𝒕 𝑩𝒂𝒉𝒊 °•◈</div>
       <input type="password" id="pass" class="login-input" placeholder="ACCESS KEY">
       <button onclick="login()" class="login-btn">ENTER SYSTEM</button>
       <div id="errorMsg">❌ WRONG ACCESS KEY!</div>
     </div>
   </div>
 
-  <div id="mainApp" style="display: none;">
+  <div id="mainApp">
     <div class="header">◈•° 𝑲𝒊𝒏𝒈 𝑺𝒐𝒊𝒌𝒂𝒕 𝑩𝒂𝒉𝒊 °•◈</div>
 
     <div class="stats-bar">
       <div class="stat-pill"><div>WINS</div><span id="stW" style="color:var(--win)">0</span></div>
       <div class="stat-pill"><div>LOSS</div><span id="stL" style="color:var(--loss)">0</span></div>
-      <div class="stat-pill"><div>STREAK</div><span id="stS" style="color:#ffae00">0</span></div>
+      <div class="stat-pill"><div>L-STREAK</div><span id="stS" style="color:#ffae00">0</span></div>
       <div class="stat-pill"><div>ACCURACY</div><span id="stA">0%</span></div>
     </div>
 
@@ -41,9 +41,9 @@
           <div class="confidence-box" id="confidenceLevel">Confidence: 0%</div>
         </div>
       </div>
-      <div class="dash-footer">
-        <span id="syncMsg">SYSTEM ONLINE (500)</span>
-        <span id="timer">--:--</span>
+      <div style="margin-top: 15px; border-top: 1px solid #222; padding-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-size: 11px; color: var(--text-dim);" id="syncMsg">SYSTEM ONLINE</span>
+        <span style="color: var(--primary); font-weight: 700;" id="timer">--:--</span>
       </div>
     </div>
 
@@ -59,7 +59,7 @@
         </table>
       </div>
     </div>
-    <div class="sync-status">Developed by: ◈•° 𝑲𝒊𝒏𝒈 𝑺𝒐𝒊𝒌𝒂𝒕 𝑩𝒂𝒉𝒊 °•◈</div>
+    <div class="sync-status" id="bigDataStatus">Developed by: ◈•° 𝑲𝒊𝒏𝒈 𝑺𝒐𝒊𝒌𝒂𝒕 𝑩𝒂𝒉𝒊 °•◈</div>
   </div>
 
   <script src="config.js"></script>
